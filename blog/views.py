@@ -38,9 +38,12 @@ def index(request):
     #popular_posts = sorted(posts, key=get_likes_count)
     #most_popular_posts = popular_posts[-5:]  # TODO. Как это посчитать?
 
-    posts = Post.objects.annotate(amount_likes=Count('likes'))
-    popular_posts = sorted(posts, key=get_likes_count)
-    most_popular_posts = popular_posts[-5:]  # TODO. Как это посчитать?
+    #posts = Post.objects.annotate(amount_likes=Count('likes'))
+    #popular_posts = sorted(posts, key=get_likes_count)
+    #most_popular_posts = popular_posts[-5:]  # TODO. Как это посчитать?
+    
+    most_popular_posts = Post.objects.annotate(amount_likes=Count('likes')).order_by('-amount_likes')[:5]
+
 
 
     fresh_posts = Post.objects.order_by('published_at')
