@@ -185,16 +185,20 @@ def tag_filter(request, tag_title):
 
     # most_popular_posts = []  # TODO. Как это посчитать?
 
-    most_popular_posts = Post.objects.popular().prefetch_related('author')[:5] \
-            .fetch_with_comments_count()
+    #most_popular_posts = Post.objects.popular().prefetch_related('author')[:5] \
+    #        .fetch_with_comments_count()
 
+    most_popular_posts = Post.objects.popular().prefetch_related('author').prefetch_related(
+        Prefetch('tags', queryset=Tag.objects.annotate(amount_posts=Count('posts'))))[:5] \
+        .fetch_with_comments_count()
 
-    related_posts = tag.posts.all().prefetch_related('author') \
+    related_posts = tag.posts.all().prefetch_related('author').prefetch_related(
+        Prefetch('tags', queryset=Tag.objects.annotate(amount_posts=Count('posts')))) \
         .annotate(amount_comments=Count('comments')).order_by('-amount_comments')[:20]
 
     context = {
         'tag': tag.title,
-        'popular_tags': [serialize_tag(tag) for tag in most_popular_tags],
+        'popular_tags': [serialize_tag_optimized(tag) for tag in most_popular_tags],
         'posts': [serialize_post_optimized(post) for post in related_posts],
         'most_popular_posts': [
             serialize_post_optimized(post) for post in most_popular_posts
