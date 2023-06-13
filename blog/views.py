@@ -176,7 +176,7 @@ def tag_filter(request, tag_title):
             .fetch_with_comments_count()
 
 
-    related_posts = tag.posts.all()[:20] #.prefetch_related('author')[:20]
+    related_posts = tag.posts.all().prefetch_related('author')[:20]
 
     context = {
         'tag': tag.title,
