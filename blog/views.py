@@ -103,7 +103,7 @@ def index(request):
     #    .annotate(amount_comments=Count('comments', distinct=True)).order_by('-published_at')[:5]
 
     most_fresh_posts = Post.objects.prefetch_related('author').prefetch_tags() \
-        .annotate(amount_comments=Count('comments', distinct=True)).order_by('-published_at')[:5]
+        .annotate(amount_comments=Count('comments')).order_by('-published_at')[:5]
 
     #tags = Tag.objects.all()
     #popular_tags = sorted(tags, key=get_related_posts_count)
@@ -163,10 +163,12 @@ def post_detail(request, slug):
     #        .fetch_with_comments_count()
 
             
-    most_popular_posts = Post.objects.popular().prefetch_related('author').prefetch_related(
-        Prefetch('tags', queryset=Tag.objects.annotate(amount_posts=Count('posts'))))[:5] \
-        .fetch_with_comments_count()
+    #most_popular_posts = Post.objects.popular().prefetch_related('author').prefetch_related(
+    #    Prefetch('tags', queryset=Tag.objects.annotate(amount_posts=Count('posts'))))[:5] \
+    #    .fetch_with_comments_count()
 
+    most_popular_posts = Post.objects.popular().prefetch_related('author').prefetch_tags()[:5] \
+        .fetch_with_comments_count()
 
     context = {
         'post': serialized_post,
@@ -192,13 +194,21 @@ def tag_filter(request, tag_title):
     #most_popular_posts = Post.objects.popular().prefetch_related('author')[:5] \
     #        .fetch_with_comments_count()
 
-    most_popular_posts = Post.objects.popular().prefetch_related('author').prefetch_related(
-        Prefetch('tags', queryset=Tag.objects.annotate(amount_posts=Count('posts'))))[:5] \
-        .fetch_with_comments_count()
+    #most_popular_posts = Post.objects.popular().prefetch_related('author').prefetch_related(
+    #    Prefetch('tags', queryset=Tag.objects.annotate(amount_posts=Count('posts'))))[:5] \
+    #    .fetch_with_comments_count()
 
-    related_posts = tag.posts.all().prefetch_related('author').prefetch_related(
-        Prefetch('tags', queryset=Tag.objects.annotate(amount_posts=Count('posts')))) \
+    most_popular_posts = Post.objects.popular().prefetch_related('author').prefetch_tags()[:5] \
+        .fetch_with_comments_count()        
+
+    #related_posts = tag.posts.all().prefetch_related('author').prefetch_related(
+    #    Prefetch('tags', queryset=Tag.objects.annotate(amount_posts=Count('posts')))) \
+    #    .annotate(amount_comments=Count('comments')).order_by('-amount_comments')[:20]
+
+
+    related_posts = tag.posts.all().prefetch_related('author').prefetch_tags() \
         .annotate(amount_comments=Count('comments')).order_by('-amount_comments')[:20]
+
 
     context = {
         'tag': tag.title,
