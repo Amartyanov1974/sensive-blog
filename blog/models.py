@@ -22,7 +22,6 @@ class PostQuerySet(models.QuerySet):
         most_popular_posts_ids = [post.id for post in most_popular_posts]
         posts_with_comments = Post.objects.filter(id__in=most_popular_posts_ids).annotate(amount_comments=Count('comments'))
         ids_and_comments = posts_with_comments.values_list('id', 'amount_comments')
-        ids_and_comments = list(ids_and_comments)
         count_for_id = dict(ids_and_comments)
         for post in most_popular_posts:
             post.amount_comments = count_for_id[post.id]
