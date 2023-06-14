@@ -94,7 +94,7 @@ def tag_filter(request, tag_title):
     most_popular_posts = Post.objects.popular().prefetch_related('author').prefetch_tags()[:5] \
         .fetch_with_comments_count()        
 
-    related_posts = tag.posts.all().prefetch_related('author').prefetch_tags() \
+    related_posts = tag.posts.prefetch_related('author').prefetch_tags() \
         .annotate(amount_comments=Count('comments')).order_by('-amount_comments')[:20]
 
     context = {
