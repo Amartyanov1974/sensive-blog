@@ -6,34 +6,48 @@ from django.db.models import Count, Prefetch
 
 class PostQuerySet(models.QuerySet):
     def year(self, year):
-        posts_at_year = self.filter(published_at__year=year).order_by('published_at')
+        posts_at_year = self.filter(published_at__year=year) \
+            .order_by('published_at')
+
         return posts_at_year
 
     def popular(self):
-        return self.annotate(amount_likes=Count('likes')).order_by('-amount_likes')
+        popular = self.annotate(amount_likes=Count('likes')) \
+            .order_by('-amount_likes')
+        return popular
 
     def fetch_with_comments_count(self):
         """
-        Используется вместо двойного annotate. Добавили дополнительный запрос,
-        но зато не создаем лишние промежуточные структуры в базе данных, которые
-        использовали вычислительные ресурсы.
+        Используется вместо двойного annotate. Добавили дополнительный
+        запрос, но зато не создаем лишние промежуточные структуры в базе
+        данных, которые использовали вычислительные ресурсы.
         """
         most_popular_posts = self
         most_popular_posts_ids = [post.id for post in most_popular_posts]
-        posts_with_comments = Post.objects.filter(id__in=most_popular_posts_ids).annotate(amount_comments=Count('comments'))
-        ids_and_comments = posts_with_comments.values_list('id', 'amount_comments')
+        posts_with_comments = Post.objects.filter(id__in=most_popular_posts_ids) \
+            .annotate(amount_comments=Count('comments'))
+
+        ids_and_comments = posts_with_comments.values_list('id',
+                                                           'amount_comments')
+
         count_for_id = dict(ids_and_comments)
         for post in most_popular_posts:
             post.amount_comments = count_for_id[post.id]
         return most_popular_posts
 
     def prefetch_tags(self):
-        return self.prefetch_related(Prefetch('tags', queryset=Tag.objects.annotate(amount_posts=Count('posts'))))
+        tags = self.prefetch_related(Prefetch('tags', queryset=Tag.objects \
+            .annotate(amount_posts=Count('posts'))))
+
+        return tags
 
 
 class TagQuerySet(models.QuerySet):
     def popular(self):
-        return self.annotate(amount_posts=Count('posts')).order_by('-amount_posts')
+        popular = self.annotate(amount_posts=Count('posts')) \
+            .order_by('-amount_posts')
+
+        return popular
 
 
 class Post(models.Model):
